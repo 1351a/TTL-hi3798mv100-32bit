@@ -149,7 +149,6 @@ journald 配置为 volatile（`/etc/systemd/journald.conf.d/00-ecoo-volatile.con
 | 内核可用内存                | 501.4 MiB                  | 673.7 MiB                    |
 | VDEC 硬件解码             | 可用                         | 不可用                          |
 | HDMI 原生 TTY           | 正常                         | 正常                           |
-| 实测日志                  | PDD119                     | PDD104                       |
 
 除 `bootargs9-32.bin` 外，两个目录里其余 9 个刷机文件 md5 完全相同。
 
