@@ -1,0 +1,10 @@
+9c8de4c764098f3e2f09d80ce21bb616  backup-32.ext4
+ffb71859d26ff63ae5554da5df526060  baseparam.img
+a700a723dca20cff0ba0008bea4830f3  bootargs9-32.bin
+ca321f4f8dd435ba403f126ceda5a13d  emmc_TTL-hi3798mv100-32.xml
+de3677dc87910c06880e3ca821d336af  fastboot-hi3798mdmo1a.bin
+f9790e40b817f5fd587b54725b37acb0  hi_kernel-mv100-32-fbcon.bin
+ec5b4a19479342435db1ce3892483b46  logo.img
+2250842bba58e860155cac6e39998a74  pq_param.bin
+c8aef87a6ec08a2b9526d036e3da81b9  recoverybox32.ext4
+10b8bae87654622f62378d3f25e840f0  rootfs-32.img
