@@ -5,6 +5,20 @@
 
 ---
 
+## 版本信息
+
+| 项    | 值                                                                        |
+| ---- | ------------------------------------------------------------------------ |
+| 发行版  | v1.0                                                                     |
+| 构建日期 | 2026-10-02                                                               |
+| 内核   | `4.4.35_ecoo_81082668`（已启用 fbcon），md5 `f9790e40b817f5fd587b54725b37acb0` |
+| 变体   | `vdec`（mmz 220M）/ `maxmem`（mmz 48M）                                      |
+
+本版包含五项修复：内核启用 fbcon（HDMI 出原生 TTY）、hifb 填充真实
+`fb_var_screeninfo`、修复 logo workqueue 竞态（曾导致开机 Oops）、
+调优 mmz 使 VDEC 与 fastboot 预留区共存、以及关闭控制台自动熄灭
+（`consoleblank=0`）。
+
 ## 一、系统说明
 
 ### 发行版与架构
@@ -33,7 +47,7 @@ armhf 是 Debian 的官方支持架构，`deb.debian.org` 的 trixie 与 trixie-
 两个本地终端对应 `getty@tty1.service` 与 `serial-getty@ttyAMA0.service`，
 均已启用。HDMI 与串口显示的是同一个 tty1 和同一个 hostname。
 
-默认账号 `root`，默认密码 `ecoo1234`。
+默认账号 `root`，默认密码 `ecoo1234`，**建议首次登录后立即修改**。
 
 HDMI 上的实际效果（VDEC 版）：
 
@@ -52,9 +66,10 @@ HDMI 上的实际效果（VDEC 版）：
     rootfstype=ext4 rootwait \
     blkdevparts=mmcblk0:1M(boot),1M(bootargs),4M(baseparam),4M(pqparam),\
     4M(logo),20M(kernel),64M(busybox),512M(backup),-(ubuntu) \
-    mem=768M mmz=ddr,0,<offset>,<size> vmalloc=500M
+    mem=768M mmz=ddr,0,<offset>,<size> vmalloc=500M consoleblank=0
 
 `console=tty0` 是 HDMI 出现内核日志与登录提示符的关键。
+`consoleblank=0` 关闭内核的控制台自动熄灭（见"已知问题"）。
 `mmz` 的 offset 由 fastboot 按 mmz size 算出，两个版本取值不同，详见下文。
 
 ### 启用的服务
@@ -134,6 +149,7 @@ journald 配置为 volatile（`/etc/systemd/journald.conf.d/00-ecoo-volatile.con
 | 内核可用内存                | 501.4 MiB                  | 673.7 MiB                    |
 | VDEC 硬件解码             | 可用                         | 不可用                          |
 | HDMI 原生 TTY           | 正常                         | 正常                           |
+| 实测日志                  | PDD119                     | PDD104                       |
 
 除 `bootargs9-32.bin` 外，两个目录里其余 9 个刷机文件 md5 完全相同。
 
@@ -180,6 +196,32 @@ journald 配置为 volatile（`/etc/systemd/journald.conf.d/00-ecoo-volatile.con
 两侧都够。
 
 ## 七、已知问题
+
+### 已修复：开机约 10 分钟后 HDMI 黑屏
+
+**现象**：盒子正常跑着，不接键盘也没有输入，约 10 分钟后 HDMI 输出变成纯黑，
+但系统本身仍在运行（SSH、网络、串口都正常）。
+
+**原因**：内核 `drivers/tty/vt/vt.c` 里
+
+    static int blankinterval = 10*60;
+    core_param(consoleblank, blankinterval, int, 0444);
+
+默认 10 分钟无键盘活动就熄灭控制台。`vt.c` 里 `if (blankinterval)` 为真时
+会启动 `console_timer`，到点置 `console_blanked = 1`，而
+`DO_UPDATE(vc)` 宏是 `(CON_IS_VISIBLE(vc) && !console_blanked)`，
+一旦 blanked，fbcon 就不再刷新屏幕并调用 `fbcon_blank()` 清屏。
+
+这是所有 Linux 控制台的默认行为，普通服务器上只是"屏幕暗了"，
+但在这台盒子上表现为 HDMI 彻底黑屏，容易被误判为驱动故障。
+
+**修复**：在内核命令行加 `consoleblank=0`，使 `blankinterval` 为 0，
+定时器根本不启动。本固件的两个版本都已加入该参数。
+
+如果你手上有早于该修复的版本，只需重刷 bootargs 分区即可，不必全量：
+
+    HiTool → 分区表选 emmc_TTL-hi3798mv100-32-bootargs-noblank-vdec.xml
+                                         或 ...-bootargs-noblank-maxmem.xml
 
 - **不要热插拔 HDMI。** 厂商的 HDMI hotplug 回调为空，拔掉再插会走到
   `Sink: Deactive` / `PHY Output: Disable`，屏幕不再亮，需重启。开机前插好。

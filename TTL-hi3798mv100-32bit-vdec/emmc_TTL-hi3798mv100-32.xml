@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="GB2312" ?>
 <Partition_Info ProgrammerFile="">
+<!-- Hi3798Mv100 32bit Debian 13 full flash - maxmem edition - v1.0 (2026-10-02)
+     All 9 partitions are Sel="1".
 
+     Fixes included in this release:
+     1. Vendor kernel rebuilt with CONFIG_FRAMEBUFFER_CONSOLE so fbcon drives
+        the HDMI output.  Previously the kernel had /dev/fb0 but no fbcon,
+        so console=tty0 produced nothing and HDMI stayed black.
+     2. hifb now publishes a real fb_var_screeninfo (1920x1080-32bpp) before
+        register_framebuffer(), so fbcon binds a colour 240x67 console instead
+        of the mono fallback.
+     3. hifb DRV_HIFB_ResetLogoState() drains pending freeLogoMemWork via
+        cancel_work_sync() before memset()-ing gs_stLogo.  Without it the async
+        work queued from DRV_HIFB_Open -> DRV_HIFB_CloseLogo had work->func
+        zeroed and kworker jumped to NULL (process_one_work+0x34, address
+        00000004), halting the boot before login.
+     4. mmz tuned to mmz=ddr,0,0,48M (CMA 48M, reserve 215M) so both CMA and the fastboot reserve region fit.
+     5. consoleblank=0 added to the kernel command line, so the console is
+        never blanked after 10 minutes of keyboard inactivity.
+
+     Kernel: hi_kernel-mv100-32-fbcon.bin
+             md5 f9790e40b817f5fd587b54725b37acb0 (10,740,379 bytes) -->
+<!-- Hi3798Mv100 32bit Debian 13 full flash - VDEC edition - v1.0 (2026-10-02)
+     All 9 partitions are Sel="1".
+
+     Fixes included in this release:
+     1. Vendor kernel rebuilt with CONFIG_FRAMEBUFFER_CONSOLE so fbcon drives
+        the HDMI output.  Previously the kernel had /dev/fb0 but no fbcon,
+        so console=tty0 produced nothing and HDMI stayed black.
+     2. hifb now publishes a real fb_var_screeninfo (1920x1080-32bpp) before
+        register_framebuffer(), so fbcon binds a colour 240x67 console instead
+        of the mono fallback.
+     3. hifb DRV_HIFB_ResetLogoState() drains pending freeLogoMemWork via
+        cancel_work_sync() before memset()-ing gs_stLogo.  Without it the async
+        work queued from DRV_HIFB_Open -> DRV_HIFB_CloseLogo had work->func
+        zeroed and kworker jumped to NULL (process_one_work+0x34, address
+        00000004), halting the boot before login.
+     4. mmz tuned to mmz=ddr,0,0,220M (CMA 220M, reserve 43M) so both CMA and the fastboot reserve region fit.
+     5. consoleblank=0 added to the kernel command line, so the console is
+        never blanked after 10 minutes of keyboard inactivity.
+
+     Kernel: hi_kernel-mv100-32-fbcon.bin
+             md5 f9790e40b817f5fd587b54725b37acb0 (10,740,379 bytes) -->
 <Part Sel="1" PartitionName="fastboot" FlashType="emmc" FileSystem="none" Start="0M" Length="1M" SelectFile="fastboot-hi3798mdmo1a.bin"/>
 <Part Sel="1" PartitionName="bootargs" FlashType="emmc" FileSystem="none" Start="1M" Length="1M" SelectFile="bootargs9-32.bin"/>
 <Part Sel="1" PartitionName="baseparam" FlashType="emmc" FileSystem="none" Start="2M" Length="4M" SelectFile="baseparam.img"/>

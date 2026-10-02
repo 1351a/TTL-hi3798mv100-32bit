@@ -63,9 +63,10 @@ HDMI 上的 systemd 启动日志（原生 TTY，注意 swap 已正常启用）�
     rootfstype=ext4 rootwait \
     blkdevparts=mmcblk0:1M(boot),1M(bootargs),4M(baseparam),4M(pqparam),\
     4M(logo),20M(kernel),64M(busybox),512M(backup),-(ubuntu) \
-    mem=768M mmz=ddr,0,<offset>,<size> vmalloc=500M
+    mem=768M mmz=ddr,0,<offset>,<size> vmalloc=500M consoleblank=0
 
 `console=tty0` 是 HDMI 出现内核日志与登录提示符的关键。
+`consoleblank=0` 关闭内核的控制台自动熄灭（见"已知问题"）。
 `mmz` 的 offset 由 fastboot 按 mmz size 算出，两个版本取值不同，详见下文。
 
 ### 启用的服务
@@ -162,3 +163,31 @@ VDEC 需要 157,696,000 B 连续 CMA（10 帧 4K 缓冲），
 可用量为 `263M - mmz_size`。
 
 220M 时两侧分别为 CMA 220 MiB、预留区 43 MiB，都满足需求。
+
+---
+
+## 修复记录：开机约 10 分钟后 HDMI 黑屏
+
+**现象**：盒子运行中、无键盘输入，约 10 分钟后 HDMI 变成纯黑，
+但系统仍在运行（SSH、网络、串口正常）。
+
+**原因**：内核 `drivers/tty/vt/vt.c`
+
+    static int blankinterval = 10*60;
+    core_param(consoleblank, blankinterval, int, 0444);
+
+默认 10 分钟无键盘活动就熄灭控制台。`if (blankinterval)` 为真时启动
+`console_timer`，到点置 `console_blanked = 1`，而 `DO_UPDATE(vc)` 是
+`(CON_IS_VISIBLE(vc) && !console_blanked)`，一旦 blanked，fbcon 停止刷新
+并调用 `fbcon_blank()` 清屏。
+
+这是 Linux 控制台的默认行为，在普通服务器上只是屏幕变暗，
+在这台盒子上表现为 HDMI 彻底黑屏。
+
+**修复**：内核命令行加 `consoleblank=0`，使 `blankinterval` 为 0、定时器不启动。
+本版本的 bootargs 已包含该参数：
+
+    bootargs_768M=mem=768M mmz=ddr,0,0,<size>M vmalloc=500M consoleblank=0
+
+**如何验证已修复**：刷入后 `cat /proc/cmdline` 应看到 `consoleblank=0`；
+静置 15 分钟以上，HDMI 应保持显示登录提示符不变黑。

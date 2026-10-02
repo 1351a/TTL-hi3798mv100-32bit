@@ -1,0 +1,6 @@
+release   : v1.0
+date      : 2026-10-02
+variant   : vdec
+kernel    : 4.4.35_ecoo_81082668 (fbcon enabled)
+kernel md5: f9790e40b817f5fd587b54725b37acb0
+mmz       : ddr,0,0,220M

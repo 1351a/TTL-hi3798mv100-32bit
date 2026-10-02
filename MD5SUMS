@@ -1,0 +1,7 @@
+# release v1.0  2026-10-02  (Hi3798Mv100 32bit Debian 13)
+# md5                              size       file
+47a33b159edd5bcf508dea5d24c18e3c   212734389  TTL-hi3798mv100-32bit-maxmem.tar.gz
+2107a49a5f1d311b52a1428495e3f35b   212733513  TTL-hi3798mv100-32bit-vdec.tar.gz
+e2f091840577b7733831eb339fa6d71b       10166  README.md
+
+# 各归档内部完整清单见 <variant>/md5sum（可 cd 进去执行 md5sum -c md5sum）
