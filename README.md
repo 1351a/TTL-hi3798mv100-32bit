@@ -33,7 +33,7 @@ armhf 是 Debian 的官方支持架构，`deb.debian.org` 的 trixie 与 trixie-
 两个本地终端对应 `getty@tty1.service` 与 `serial-getty@ttyAMA0.service`，
 均已启用。HDMI 与串口显示的是同一个 tty1 和同一个 hostname。
 
-默认账号 `root`，默认密码见随包说明，**建议首次登录后立即修改**。
+默认账号 `root`，默认密码 `ecoo1234`。
 
 HDMI 上的实际效果（VDEC 版）：
 
